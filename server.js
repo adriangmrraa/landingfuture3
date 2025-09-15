@@ -17,7 +17,7 @@ app.use(helmet({
             scriptSrc: ["'self'"],
             imgSrc: ["'self'", "data:", "https:"],
             connectSrc: ["'self'"],
-            frameSrc: ["'self'", "https://www.youtube.com"],
+            frameSrc: ["'self'", "https://www.youtube.com", "https://n8n-n8n.yn8wow.easypanel.host"],
         },
     },
 }));
