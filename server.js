@@ -75,6 +75,9 @@ app.get('/api/response', (req, res) => {
     }
 });
 
+// Store responses by sessionId
+const responses = new Map();
+
 // Chat endpoint
 app.post('/api/chat', async (req, res) => {
     try {
@@ -144,6 +147,44 @@ app.post('/api/chat', async (req, res) => {
     } catch (error) {
         console.error('Server error:', error.message);
         res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Callback endpoint for n8n responses
+app.post('/api/callback', (req, res) => {
+    try {
+        const { sessionId, response } = req.body;
+
+        if (!sessionId || !response) {
+            return res.status(400).json({ error: 'sessionId and response required' });
+        }
+
+        // Store response for the session
+        responses.set(sessionId, {
+            response,
+            timestamp: Date.now()
+        });
+
+        console.log(`Response stored for session ${sessionId}`);
+        res.status(200).json({ success: true });
+
+    } catch (error) {
+        console.error('Callback error:', error.message);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Poll endpoint for client to get responses
+app.get('/api/response', (req, res) => {
+    const { sessionId } = req.query;
+    const response = responses.get(sessionId);
+
+    if (response) {
+        // Remove response after sending (one-time)
+        responses.delete(sessionId);
+        res.json({ message: response.response });
+    } else {
+        res.json({ message: null });
     }
 });
 
