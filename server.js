@@ -52,32 +52,6 @@ app.get('/health', (req, res) => {
 // Store responses by sessionId
 const responses = new Map();
 
-// Response endpoint for n8n
-app.post('/api/response', (req, res) => {
-    const { sessionId, message } = req.body;
-    if (sessionId && message) {
-        responses.set(sessionId, message);
-        res.status(200).json({ success: true });
-    } else {
-        res.status(400).json({ error: 'sessionId and message required' });
-    }
-});
-
-// Get response endpoint for client polling
-app.get('/api/response', (req, res) => {
-    const { sessionId } = req.query;
-    const message = responses.get(sessionId);
-    if (message) {
-        responses.delete(sessionId); // Remove after sending
-        res.json({ message });
-    } else {
-        res.json({ message: null });
-    }
-});
-
-// Store responses by sessionId
-const responses = new Map();
-
 // Chat endpoint
 app.post('/api/chat', async (req, res) => {
     try {
@@ -150,7 +124,7 @@ app.post('/api/chat', async (req, res) => {
     }
 });
 
-// Callback endpoint for n8n responses
+// Callback endpoint for n8n responses (POST)
 app.post('/api/callback', (req, res) => {
     try {
         const { sessionId, response } = req.body;
@@ -165,11 +139,35 @@ app.post('/api/callback', (req, res) => {
             timestamp: Date.now()
         });
 
-        console.log(`Response stored for session ${sessionId}`);
+        console.log(`Response stored for session ${sessionId}: ${response}`);
         res.status(200).json({ success: true });
 
     } catch (error) {
         console.error('Callback error:', error.message);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// GET version for testing (optional)
+app.get('/api/callback', (req, res) => {
+    try {
+        const { sessionId, response } = req.query;
+
+        if (!sessionId || !response) {
+            return res.status(400).json({ error: 'sessionId and response required as query params' });
+        }
+
+        // Store response for the session
+        responses.set(sessionId, {
+            response,
+            timestamp: Date.now()
+        });
+
+        console.log(`GET Response stored for session ${sessionId}: ${response}`);
+        res.status(200).json({ success: true });
+
+    } catch (error) {
+        console.error('GET Callback error:', error.message);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
