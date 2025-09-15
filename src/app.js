@@ -42,12 +42,20 @@ const whatsappLink = document.getElementById('whatsapp-link');
 whatsappPanel.style.display = 'none';
 
 function toggleWhatsappPanel() {
-    const isOpen = whatsappPanel.style.display !== 'none';
-    whatsappPanel.style.display = isOpen ? 'none' : 'block';
-    whatsappToggle.setAttribute('aria-expanded', !isOpen);
-    if (!isOpen) {
-        chatInput.focus();
+    const isOpen = whatsappPanel.classList.contains('open');
+    if (isOpen) {
+        whatsappPanel.classList.remove('open');
+        setTimeout(() => {
+            whatsappPanel.style.display = 'none';
+        }, 300); // Wait for animation to complete
+    } else {
+        whatsappPanel.style.display = 'block';
+        setTimeout(() => {
+            whatsappPanel.classList.add('open');
+            chatInput.focus();
+        }, 10); // Small delay to ensure display is set
     }
+    whatsappToggle.setAttribute('aria-expanded', !isOpen);
 }
 
 whatsappToggle.addEventListener('click', toggleWhatsappPanel);
